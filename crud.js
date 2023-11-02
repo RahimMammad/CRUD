@@ -1,87 +1,96 @@
-const API = "http://localhost:3000/posts"
-
+const baseUrl="http://localhost:3000/coffees"
 const dataTable=document.getElementById('data-table')
 
-const axiosData = async () => {
+
+async function fetchData() {
     try {
-        const respData = await axios.get(API)
-        console.log(respData);
-    } catch {
+        const response=await axios.get(baseUrl)
+        addTable(response.data)
+    } catch (error) {
         console.log(error);
     }
 }
 
-const addTable = (data) => {
+function addTable(data) {
     dataTable.innerHTML=''
     data.forEach(item => {
         const row=document.createElement('tr')
         row.innerHTML=`
        
             <td>${item.id}</td>
-            <td>${item.body}</td>
-            <td>${item.title}</td>
+            <td>${item.product}</td>
+            <td>${item.price}</td>
             <td>
-            <button onclick="postMethod(${item.id})">Edit</button>
+            <button onclick="editPost(${item.id})">Edit</button>
             <button onclick="deletePost(${item.id})">Delete</button>
         </td>
         `
         dataTable.appendChild(row)
     });
+    
 }
 
-const postMethod = async () => {
-    const descInp = document.getElementById("desc-input");
-    const titleInp = document.getElementById("name-input");
+async function createPost(){
+    const productInput=document.getElementById('desc-input').value
+    const priceInput=document.getElementById('name-input').value
     try {
-        await axios.post(API, {
-            title: titleInp.value,
-            body: descInp.value
+        
+        await axios.post(baseUrl,{
+           
+            product:productInput,
+            price:priceInput
         })
-        axiosData()
+        fetchData()
+
     } catch (error) {
         console.log(error);
     }
 }
 
-let updatePostId = null
+let editPosdId=null
 
-const updatePost = async (postId) => {
+async function editPost(postId) {
+    
     try {
-        const resp = await axios.get(`${API}/${postId}`)
-        const post = resp.data
-
-        descInp.value = post.description
-        titleInp.value = post.name
-        updatePostId = postId
+        const response= await axios.get(`${baseUrl}/${postId}`)
+       
+        const post=response.data
+        
+        document.getElementById('desc-input').value=post.product
+   document.getElementById('name-input').value=post.price
+    
+    editPosdId=postId
     } catch (error) {
         console.log(error);
     }
 }
 
-const updateMethod = async () => {
-    const descInp = document.getElementById("desc-input");
-    const titleInp = document.getElementById("name-input");
-
-    if(updatePostId) {
+async function updatePost() {
+    const productInput=document.getElementById('desc-input').value
+    const priceInput=document.getElementById('name-input').value
+    if(editPosdId){
         try {
-            await axios.put(`${API}/${updatePostId}`, {
-                title: titleInp.value,
-                body: descInp.value
+           await axios.put(`${baseUrl}/${editPosdId}`,{
+                product:productInput,
+                price:priceInput
             })
-            axiosData()
+            fetchData()
         } catch (error) {
             console.log(error);
         }
     }
+
 }
 
-const deletePost = async (postId) => {
+
+async function deletePost(postId) {
     try {
-        await axios.delete(`${API}/${postId}`)
-        axiosData()
+        
+        await axios.delete(`${baseUrl}/${postId}`)
+        fetchData()
     } catch (error) {
         console.log(error);
     }
 }
 
-axiosData()
+fetchData()
